@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Drag_Function</title>
+	<style>
+		*{margin: 0;padding: 0;list-style: none; box-sizing: border-box;text-align: center;}
+		.box_cover{width: 300px; height: 1200px;background: rgb(235,236,240); margin: 0 auto;padding-top: 1px; display: flex; flex-direction: column;}
+		.box_cover>.cover{display: block;}
+		.box_cover>.cover>.box{width:290px; height: 80px; position: relative; top: 0;left: 0; background: #fff; margin: 5px;user-select: none; cursor: pointer;line-height: 80px;}
+		.box_cover>.cover>.box:hover {background: rgb(255,255,205);}
+		.box_cover>.cover>.box:active {background: rgb(255,255,205);}
+
+		.test{width: 100px;height: 100px;background: red; display: none; position: absolute;top: 0;left: 0; z-index: 10000;}
+	</style>
+</head>
+<body>
+	<div class="test"></div>
+	<div class="box_cover">
+		<div class="cover" onDrop="drop(e);">
+			<div class="box">1</div>
+			<div class="box">2</div>
+			<div class="box">3</div>
+			<div class="box">4</div>
+			<div class="box" style="height:140px;">5</div>
+			<div class="box">6</div>
+			<div class="box">7</div>
+			<div class="box">8</div>
+			<div class="box">9</div>
+			<div class="box">10</div>
+			<div class="box">11</div>
+			<div class="box">12</div>
+			<div class="box">13</div>
+		</div>
+	</div>
+
+	<script>
+	//setting
+	const
+	one = v => document.querySelector(v),
+	all = v => document.querySelectorAll(v),
+	len = Array.from(all(".box")).length,
+	coverW = one(".box_cover").offsetWidth,//box_cover Width
+	coverH = one(".box_cover").offsetHeight;//box_cover Height
+
+	let 
+	target,
+	boxH,
+	tarX = 0,
+	tarY = 0,
+	tarI = 0,
+	chkH = 0,
+	centerX = 0,
+	centerY = 0,
+	test,
+	bool = false,
+	coverH_arr = [],
+	coverX =  one(".box_cover").offsetLeft,//box_cover Left
+	coverY =  one(".box_cover").offsetTop;//box_cover Top
+
+	// test
+	// one(".test").style.display = "block";
+	// one(".test").style.top = 176+"px";
+	// one(".test").style.left = one(".box:nth-child(2)").offsetLeft+"px";
+
+	function eve() {
+		// 박스 마우스 클릭시
+		Array.from(all(".box")).some((v,idx) => {
+			v.addEventListener("mousedown",function(e) {
+				tarX = e.offsetX;
+				tarY = e.offsetY;
+				tarI = idx;
+				centerX = v.offsetWidth/2;
+				centerY = v.offsetHeight/2;
+				boxH = v.offsetHeight;
+				target = v;
+				console.log(centerX);
+				console.log(centerY);
+				return start(); 
+			}); 
+		});
+
+		// 화면 사이즈 변경시
+		window.addEventListener("resize", _ => {
+			coverX =  one(".box_cover").offsetLeft;
+			coverY =  one(".cover").offsetTop;
+		});
+	}
+
+	function pushArr() {
+		all(".box").forEach((v,idx) => {
+			coverH_arr[idx] = v.offsetTop;
+		});
+	}
+
+	// 요소 위치 고정
+	function transform(value) {
+		all(".box").forEach((v,idx) => {
+			if(value <= idx){
+				v.style.transform = `translate(0px,-${boxH+5}px)`;
+			}
+		});
+	}
+	// 특정부분부터 요소 위치 올려주기
+	function Notransform(value = 0,chk = 0) {
+		// all(`.box:not(:nth-child(${tarI+1}))`).forEach(v => v.style.transition = "0s");
+		if(chk == 0){
+			for(let i = tarI+1; i < len; i++) {
+				one(`.box:nth-child(${i+1})`).style.transform = "translate(0px,0px)";
+			}
+		}else if(chk == 1){
+			all(".box").forEach((v,idx) => {
+				if(value <= idx){
+					v.style.transform = `translate(0px,0px)`;
+				}
+			});
+		}
+	}
+	
+	// function ChooseNotransform(value) {
+	// 	for(let i = value+1; i < len; i++) {
+	// 		one(`.box:nth-child(${i+1})`).style.transform = `translate(0px,0px)`;
+	// 	}
+	// }
+
+	// eve
+	function start() {
+		bool = true;
+		window.addEventListener("mousemove",function(e) {
+			if(bool){
+				// console.log(coverY+" coverY ",coverH+" coverH ");
+				if(coverX <= e.clientX && (coverX + coverW) >= e.clientX && 0 <= e.clientY && coverH >= e.clientY){
+					for(let i = 0,len = coverH_arr.length; i < len; i++){
+						if(e.clientX >= (coverX-5) && e.clientX <= (coverX + 295) &&
+							e.pageY >= coverH_arr[i] && e.pageY <= (coverH_arr[i] + 80)){
+							transform(i,1);
+					}else {
+						Notransform((i+1),1);
+					}
+				}
+				// transform(boxH);
+			}else{Notransform();}
+			target.style.position = "fixed";
+			target.style.zIndex = "10";
+			target.style.transform = `translate(${(e.clientX-tarX)}px,${(e.clientY-tarY)}px)`;
+		}
+	})
+			// 마우스 클릭후 땠을때
+			document.addEventListener("mouseup",e =>{
+				bool = false;
+				target.style.transform = "translate(0,0)";
+				target.style.position = "relative";
+				target.style.zIndex = "0";
+				Notransform();
+			});
+		}
+
+		eve();
+		pushArr();
+
+	</script>
+</body>
+</html>
