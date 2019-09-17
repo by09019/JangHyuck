@@ -6,6 +6,8 @@
 	<style>
 		*{margin: 0;padding: 0;list-style: none;box-sizing: border-box;}
 		body{width: 100%;height: 100%;background: #f5f5f5;}
+		div{display: block;}
+		button{padding: 0;border:0; background: none; vertical-align: baseline;font-family: inherit;font-weight: inherit; }
 		.wrap{width: 100%;height: 100vh;position: relative;}
 		.wrap>h1{ width: 100%; font-size: 100px; font-weight: 400; text-align: center; color:rgba(175,47,47,0.15);}
 		.line{text-decoration:line-through;}
@@ -13,21 +15,20 @@
 		.wrap>.in>input{width: 100%;height: 100%;padding: 16px 16px 16px 60px;border:none; background: white; box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03); font-size: 24px;cursor: text;border:1px solid rgba(0,0,0,0.1); outline: none;}
 
 		.wrap>.in>input::placeholder{color:rgba(0,0,0,0.2);user-select:none;}
-		.ttt{width: 57px;height: 64px;visibility: hidden; position: absolute;z-index: 100; cursor: pointer; left: 0;text-align: center;line-height: 64px;user-select:none;}
+		.ttt{width: 57px;height: 64px;visibility: hidden; position: absolute;z-index: 100; cursor: pointer; left: 0;text-align: center;line-height: 64px;user-select:none; opacity: 0.5;}
 		.ttt>span{display: inline-block; transform: rotate(90deg); font-size: 25px;}
+		.opa1{opacity: 1;}
 		input[name="allChk"]{display: none;}
 
-		.list_box{width: 550px;height:58px auto; margin: 0 auto;}
-		.list_box>.list{width: 100%;height:auto; min-height: 58px; border:1px solid #e6e6e6; background: white; position: relative; padding-left: 10px;}
-		.list_box>.list>.p_box{width:calc(100% - 60px); line-height: 58px; height: 100%;float: right;}
-		.list_box>.list>input{width: 40px;height: 40px; opacity: 0;position: relative;top: 10px; z-index: 100;}
-		.list_box>.list>input+.lab{width: 40px;height: 40px; border:1px solid gray; position: absolute; z-index: 0; top: 10px; border-radius: 50%;}
-		.list_box>.list>.del{font-size: 25px;color:red; position: absolute;right: 10px;top: 10px;user-select:none; cursor: pointer;display: none;}
-		.list_box>.list:hover > .del{display: block;}
-
-		.list_box>.list>input:checked + .lab{background: blue;}
-		.chk{border:1px solid rgba(175,47,47,0.5); border-radius: 2px;}
-
+		main{width: 550px; margin: 0 auto;}
+		.list_box li .toggle {opacity: 0; text-align: center;width: 40px;height: auto;position: absolute;top: 0;bottom: 0;margin: auto 0;border: none;-webkit-appearance: none;appearance: none; outline: none;}
+		.list_box li .toggle:checked + label{background-image: url(img/checked.svg);}
+		.list_box li{position: relative; font-size: 24px; border-bottom: 1px solid #ededed; user-select: none; background: white;}
+		.list_box li .toggle + label {background-image: url(img/one.svg); background-repeat: no-repeat; background-position: center left;}
+		.list_box li label{word-break: break-all;padding: 15px 15px 15px 60px;display: block;line-height: 1.2;transition: color 0.4s;
+		}
+		.list_box li .destory {display: none; cursor: pointer; outline: none; position: absolute; top: 0;right: 10px; bottom: 0;width: 40px;height: 40px; margin:auto 0; font-size: 30px; color:#cc9a9a; margin-bottom: 11px; transition: color 0.2s ease-out;}
+		.list_box li:hover > .view > button{display: block;}
 		footer{width: 550px;height: 50px; border:1px solid #e6e6e6; background: white;position: relative;left: 50%; transform: translateX(-50%); display: flex; justify-content: space-between;box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 8px 0 -3px #f6f6f6, 0 9px 1px -3px rgba(0, 0, 0, 0.2), 0 16px 0 -6px #f6f6f6, 0 17px 2px -6px rgba(0, 0, 0, 0.2); visibility: hidden;}
 		footer>.btn{width:calc(100% / 3);height:100%;text-align: center;line-height: 48px; cursor: pointer;}
 		footer>.btn>ul{width: 100%;height: 100%; display: flex; justify-content: space-between;}
@@ -35,8 +36,10 @@
 		footer>.btn>ul>li>a{ padding:3px 3px 3px 3px; text-decoration: none; color:black;}
 		footer>.btn>ul>li>a:hover{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
 
-		.clear{visibility: hidden;}
 
+		.clear{visibility: hidden;}
+		.active{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
+		.none{display: none;}
 	</style>
 </head>
 <body>
@@ -48,7 +51,9 @@
 				<input type="text" name="search" class="search" placeholder="What needs to be done?">
 				<label for="test" class="ttt"><span>></span></label>
 			</div>
-			<div class="list_box"></div>
+			<main>
+				<ul class="list_box"></ul>
+			</main>
 			<footer>
 				<div class="btn"><span class="num">0</span> items left</div>
 				<div class="btn filters">
@@ -60,248 +65,102 @@
 				</div>
 				<div class="btn clear">Clear completed</div>
 			</footer>
+			<div class="test"></div>
 		</div>
 	</div>
+
+	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
-		const
-		one = v => document.querySelector(v),
-		all = v => Array.from(document.querySelectorAll(v));
+		//setting
+		const changeArr = v => Array.from(v);
 
-		let
+		let 
 		key,
-		search,
-		chk,
-		cnt = 0,
-		togChk =localStorage.getItem("togChk") == null ? [] : JSON.parse(localStorage.getItem("togChk")),
-		arr = localStorage.getItem("arr") == null ? [] : JSON.parse(localStorage.getItem("arr")),
-		title = localStorage.getItem("title") == null ? "allChk" : localStorage.getItem("title");
-		windowH = one(".wrap").offsetHeight; 
-
-		//나갈때
-		window.addEventListener("beforeunload", function (event) {
-			togChk = [];
-			all(".toggle").forEach((v,idx) => {
-				if(v.classList.contains('ttst')){
-					togChk.push(idx);
-				}
-			});
-			setitem();
-		});
-		
-		window.addEventListener("keydown",e =>{
-			key = e.keyCode;
-			if(key == "13") return eve();
-			else return false;
-		})
-
-		one(".allChk").addEventListener("click",function() {
-			all(".btnChk").forEach(v => v.classList.remove("chk"));
-			this.classList.toggle("chk");
-			if(this.classList.contains('chk')){
-				allChk("allChk");
-				title = "allChk";
-			}
-		})
-		one(".activeChk").addEventListener("click",function() {
-			all(".btnChk").forEach(v => v.classList.remove("chk"));
-			this.classList.toggle("chk");
-			if(this.classList.contains('chk')){
-				allChk("activeChk");
-				title = "activeChk";
-			}
-		})
-		one(".comChk").addEventListener("click",function() {
-			all(".btnChk").forEach(v => v.classList.remove("chk"));
-			this.classList.toggle("chk");
-			if(this.classList.contains('chk')){
-				allChk("comChk");
-				title = "comChk";
-			}
-		})
-
-		one(".ttt").addEventListener("click",function() {
-			this.classList.toggle("add");
-			if(this.classList.contains('add')){
-				all(".toggle").forEach(v => {
-					v.classList.add("ttst");
-					v.checked = true;
-					allChk("","chk");
-					one(".clear").style.visibility = "visible";
-				})
-				all(".p_box").forEach(v =>{
-					v.style.textDecoration = "line-through";
-				});
+		val,
+		title = "allChk";
+		search = $(".search");
+		$("."+title).addClass('active');
+		function check() {
+			len = $(".list").length;
+			changeArr($(".list")).forEach(v => {
+				if(v.)
+			})
+			if(len){
+				$("footer").css({visibility:"visible"});
+				$(".num").text($(".list").length);
+				$(".ttt").css({visibility:"visible"});
 			}else{
-				all(".toggle").forEach(v => {
-					v.classList.remove("ttst");
-					v.checked = false;
-					allChk("","chk");
-				});
-				all(".p_box").forEach(v =>{
-					v.style.textDecoration = "none";
-				});
-				one(".clear").style.visibility = "hidden";
-			}
-		})
-
-		function load() {
-			for (let i = 0,len = arr.length; i < len; i++) {
-				let list = document.createElement("div");
-				list.classList.add("list");
-				let str = arr[i];
-				list.innerHTML =str;
-				one(".list_box").prepend(list);
-				one(".num").innerHTML = all(".list").length;
-				one("footer").style.visibility = "visible";
-				one(".ttt").style.visibility = "visible";
-				remove();
-				allChk("","chk");
-			}
-			if(togChk.length != 0) {
-				one(".clear").style.visibility = "visible";
-				for(let i = 0, len = togChk.length; i < togChk.length; i++){
-					one(`.list:nth-child(${togChk[i]+1})>.toggle`).classList.add("ttst");
-					one(`.list:nth-child(${togChk[i]+1})>.p_box`).classList.add('line');
-					one(`.list:nth-child(${togChk[i]+1})>.toggle`).checked = true;
-					allChk(title);
-				}
-			}
-			one(`.${title}`).classList.add("chk");
-			allChk(title);
-		}
-
-		function allChk(msg = "",chkInt = ""){
-			if(chkInt != ""){
-				all(".btnChk").forEach(v => {
-					if(v.classList.contains('chk')){
-						return msg = v.getAttribute("data-chk");
-					}
-				});
-			}
-			if(msg != ""){
-				if(msg == "allChk"){
-					all(".toggle").forEach(v =>{
-						v.parentNode.style.display = "block";
-					});
-				}else if(msg == "activeChk") {
-					all(".toggle").forEach(v =>{
-						v.parentNode.style.display = "block";
-					});
-					all(".toggle").forEach(v =>{
-						if(v.classList.contains('ttst')){
-							v.parentNode.style.display = "none";
-						}
-					});
-				}else if(msg == "comChk") {
-					all(".toggle").forEach(v =>{
-						v.parentNode.style.display = "block";
-					});
-					all(".toggle").forEach(v =>{
-						if(!v.classList.contains('ttst')){
-							v.parentNode.style.display = "none";
-						}
-					});
-				}
+				$("footer").css({visibility:"hidden"});
 			}
 		}
 
-		function chkInput(e){
-			e.classList.toggle('ttst');
-			e.parentNode.children[2].classList.toggle('line');
-			numChk();
-			allChk("","chk");
-		}
+		function create() {
+			val = search.val().trim();
+			if(val == "") return;
+			$(".list_box").append(`
+				<li class="list">
+				<div class="view">
+				<input class='toggle' id="tog" type='checkbox'>
+				<label name= "listLabel"></label>
+				<button class='destory'>X</button>
+				</div>
+				</li>`);
+			$(".list:last-child").find("label").text(val);
+			search.val("");
+			check();
+			change();
+		} 
 
-		function numChk() {
-			let chkNum = 0;
-			all(".toggle").forEach(v => {
-				if(v.classList.contains('ttst')){
-					chkNum++;
-				}
-			});
-			if(chkNum != 0){
-				one(".clear").style.visibility = "visible";
-			}else{
-				one(".clear").style.visibility = "hidden";
+		function change() {
+			switch(title) {
+				case "allChk":
+				$(".list").removeClass('none');
+				break;
+
+				case "activeChk":
+				$(".list").removeClass('none');
+				$(".toggle:checked").parents(".list").addClass('none');
+				break;
+
+				case "comChk":
+				$(".list").removeClass('none');
+				$(".toggle:not(:checked)").parents(".list").addClass('none');
+				break;
+
+				default:
+				alert("잘못된 값입니다. 새로고침을 하여 주세요.");
+				break;
 			}
 		}
 
 		function eve() {
-			search = one(".search");
-			let val = search.value;
-			if(search.value == "") return false;
-			let list = document.createElement("div");
-			list.classList.add("list");
-			let str = `<input class='toggle' onclick ='chkInput(this);' type='checkbox'><div class='lab'></div><div class='p_box'>${val}</div><div class='del'>X</div>`;
-			list.innerHTML =str;
-			one(".list_box").prepend(list);
-			one(".num").innerHTML = all(".list").length;
-			search.value = "";
-			one("footer").style.visibility = "visible";
-			one(".ttt").style.visibility = "visible";
-			arr.push(str);
-			setitem();
-			remove();
-			allChk("","chk");
-
-		}
-
-		function clear() {
-			one(".clear").addEventListener("click",function() {
-				all(".toggle").forEach(v => {
-					if(v.classList.contains('ttst')) {
-						v.parentNode.remove();
-						one(".num").innerHTML = all(".list").length;
-					}
-				});
-				if(all(".list").length == 0){
-					one(".ttt").style.visibility = "hidden";
-					one("footer").style.visibility = "hidden";
+			$(document)
+			.on("keydown",".search", e => {
+				key = e.keyCode;
+				if(key == 13) return create();
+			})
+			.on("click",".ttt",function() {
+				$(this).toggleClass('opa1');
+				if($(this).hasClass('opa1')){
+					$(".toggle").prop("checked",true);
+				}else{
+					$(".toggle").prop("checked",false);
 				}
-				one(".clear").style.visibility = "hidden";
-				arr = [];
-				all(".p_box").reverse().forEach(v => {
-					str =  `<input class='toggle' onclick ='chkInput(this);' type='checkbox'><div class='lab'></div><div class='p_box'>${v.innerHTML}</div><div class='del'>X</div>`;
-					arr.push(str);
-				});
+			})
+			.on("click",".destory",function() {
+				$(this).parents(".list").remove();
+				check();
+			})
+			.on("click",".toggle",change)
+			.on("click",".btnChk",function() {
+				title = $(this).data("chk");
+				$(".btnChk").removeClass('active');
+				$(this).addClass('active');
+				change();
 			})
 		}
+		eve();
 
-		function remove(){
-			let str;
-			all(".del").forEach((v,idx) =>{
-				v.addEventListener("click",function(e){
-					this.parentNode.remove();
-					arr = arr.splice(idx,0);
-					if(all(".list").length == 0){ 
-						one(".ttt").style.visibility = "hidden";
-						one("footer").style.visibility = "hidden";
-						one(".clear").style.visibility = "hidden";
-					}
-					one(".num").innerHTML = all(".list").length;
-					numChk();
-					arr = [];
-					togChk = [];
-					all(".p_box").reverse().forEach(v => {
-						str =  `<input class='toggle' onclick ='chkInput(this);' type='checkbox'><div class='lab'></div><div class='p_box'>${v.innerHTML}</div><div class='del'>X</div>`;
-						arr.push(str);
-					});
-					all(".toggle").reverse().forEach((v,idx) => {
-						if(v.classList.contains('chk')) togChk.push(idx);
-					});
-				})
-			});
-		}
-
-		function setitem(){
-			localStorage.setItem("arr",JSON.stringify(arr));
-			localStorage.setItem("togChk",JSON.stringify(togChk));
-			localStorage.setItem("title",title);
-		}
-
-		remove();
-		clear();
-		load();
 	</script>
 </body>
 </html>
