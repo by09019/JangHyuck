@@ -27,6 +27,11 @@
 		.list_box li .toggle + label {background-image: url(img/one.svg); background-repeat: no-repeat; background-position: center left;}
 		.list_box li label{word-break: break-all;padding: 15px 15px 15px 60px;display: block;line-height: 1.2;transition: color 0.4s;
 		}
+
+		.list_box li.editing{border-bottom: none; padding: 0;}
+		.list_box li.editing .edit{display: block;width: 506px;padding: 12px 16px;margin: 0 0 0 43px;}
+		.list_box li.editing .view{display: none;}
+
 		.list_box li .destory {display: none; cursor: pointer; outline: none; position: absolute; top: 0;right: 10px; bottom: 0;width: 40px;height: 40px; margin:auto 0; font-size: 30px; color:#cc9a9a; margin-bottom: 11px; transition: color 0.2s ease-out;}
 		.list_box li:hover > .view > button{display: block;}
 		footer{width: 550px;height: 50px; border:1px solid #e6e6e6; background: white;position: relative;left: 50%; transform: translateX(-50%); display: flex; justify-content: space-between;box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 8px 0 -3px #f6f6f6, 0 9px 1px -3px rgba(0, 0, 0, 0.2), 0 16px 0 -6px #f6f6f6, 0 17px 2px -6px rgba(0, 0, 0, 0.2); visibility: hidden;}
@@ -35,6 +40,8 @@
 		footer>.btn>ul>li{width:calc(100% / 3);height: 100%;}
 		footer>.btn>ul>li>a{ padding:3px 3px 3px 3px; text-decoration: none; color:black;}
 		footer>.btn>ul>li>a:hover{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
+
+		.edit {position: relative;margin: 0;width: 100%;font-size: 24px;font-family: inherit;font-weight: inherit;line-height: 1.4em;border: 0;color: inherit;padding: 6px;border: 1px solid #999;box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);box-sizing: border-box;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;}
 
 
 		.clear{visibility: hidden;}
@@ -48,7 +55,7 @@
 			<input type="checkbox" id="test" name="allChk">
 			<h1>todos</h1>
 			<div class="in">
-				<input type="text" name="search" class="search" placeholder="What needs to be done?">
+				<input type="text" name="search" class="search" placeholder="What needs to be done?" autofocus>
 				<label for="test" class="ttt"><span>></span></label>
 			</div>
 			<main>
@@ -71,30 +78,33 @@
 
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
-		//setting
-		const changeArr = v => Array.from(v);
+		const changeArr = v => Array.from(v);	//setting
 
 		let 
 		key,
 		val,
+		target,
+		bool = false,
 		title = "allChk";
 		search = $(".search");
 		$("."+title).addClass('active');
 		function check() {
-			len = $(".list").length;
-			changeArr($(".list")).forEach(v => {
-				if(v.)
-			})
+			len = $(".toggle:not(:checked)").length;
 			if(len){
 				$("footer").css({visibility:"visible"});
-				$(".num").text($(".list").length);
+				$(".num").text(len);
 				$(".ttt").css({visibility:"visible"});
-			}else{
+				$(".ttt").removeClass('opa1');
+			}else if(!$(".list").length){
+				$(".ttt").removeClass('opa1');
 				$("footer").css({visibility:"hidden"});
+			}else{
+				$(".ttt").addClass('opa1');
+				$(".num").text(len);
 			}
 		}
 
-		function create() {
+		function create() {//list 생성
 			val = search.val().trim();
 			if(val == "") return;
 			$(".list_box").append(`
@@ -143,21 +153,61 @@
 				$(this).toggleClass('opa1');
 				if($(this).hasClass('opa1')){
 					$(".toggle").prop("checked",true);
+					change();
 				}else{
 					$(".toggle").prop("checked",false);
+					change();
 				}
 			})
 			.on("click",".destory",function() {
 				$(this).parents(".list").remove();
 				check();
 			})
-			.on("click",".toggle",change)
+			.on("click",".toggle",function(){
+				change();
+				check();
+			})
 			.on("click",".btnChk",function() {
 				title = $(this).data("chk");
 				$(".btnChk").removeClass('active');
 				$(this).addClass('active');
 				change();
 			})
+			.on("dblclick","label[name = 'listLabel']",function() {
+				bool = true;
+				target = $(this);
+				if(bool){
+					$(this).parents(".list").addClass('editing');
+					$(this).parents(".list").append(`<input type="text" class="edit" value="${$(this).text()}"/>`);
+					$(".edit").focus();
+				}
+			})
+			.on("keydown",".edit",function(e){
+				key = e.keyCode;
+				if(bool){
+					if(key == 13){
+						target.text($(".edit").val());
+						$(this).parents(".list").removeClass('editing');
+						$(".edit").remove();
+						bool = false;
+					}
+				}
+			})
+			.on("click","html",function(e){
+				if(bool){
+					if(!$(e.target).hasClass('edit')){
+						target.text($(".edit").val());
+						$(".edit").parents(".list").removeClass('editing');
+						$(".edit").remove();
+						bool = false;
+					}
+				}
+			})
+
+		}
+		function setitem(){
+			localStorage.setItem("title",title);
+			localStorage.setItem("obj",JSON.stringify(obj));
 		}
 		eve();
 
