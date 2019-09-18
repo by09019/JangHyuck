@@ -15,9 +15,8 @@
 		.wrap>.in>input{width: 100%;height: 100%;padding: 16px 16px 16px 60px;border:none; background: white; box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03); font-size: 24px;cursor: text;border:1px solid rgba(0,0,0,0.1); outline: none;}
 
 		.wrap>.in>input::placeholder{color:rgba(0,0,0,0.2);user-select:none;}
-		.ttt{width: 57px;height: 64px;visibility: hidden; position: absolute;z-index: 100; cursor: pointer; left: 0;text-align: center;line-height: 64px;user-select:none; opacity: 0.5;}
+		.ttt{width: 57px;height: 64px;visibility: hidden; position: absolute;z-index: 100; cursor: pointer; left: 0;top: 0; text-align: center;line-height: 64px;user-select:none; opacity: 0.5;}
 		.ttt>span{display: inline-block; transform: rotate(90deg); font-size: 25px;}
-		.opa1{opacity: 1;}
 		input[name="allChk"]{display: none;}
 
 		main{width: 550px; margin: 0 auto;}
@@ -35,15 +34,15 @@
 		.list_box li .destory {display: none; cursor: pointer; outline: none; position: absolute; top: 0;right: 10px; bottom: 0;width: 40px;height: 40px; margin:auto 0; font-size: 30px; color:#cc9a9a; margin-bottom: 11px; transition: color 0.2s ease-out;}
 		.list_box li:hover > .view > button{display: block;}
 		footer{width: 550px;height: 50px; border:1px solid #e6e6e6; background: white;position: relative;left: 50%; transform: translateX(-50%); display: flex; justify-content: space-between;box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 8px 0 -3px #f6f6f6, 0 9px 1px -3px rgba(0, 0, 0, 0.2), 0 16px 0 -6px #f6f6f6, 0 17px 2px -6px rgba(0, 0, 0, 0.2); visibility: hidden;}
-		footer>.btn{width:calc(100% / 3);height:100%;text-align: center;line-height: 48px; cursor: pointer;}
+		footer>.btn{width:calc(100% / 3);height:100%;text-align: center;line-height: 48px;}
 		footer>.btn>ul{width: 100%;height: 100%; display: flex; justify-content: space-between;}
 		footer>.btn>ul>li{width:calc(100% / 3);height: 100%;}
 		footer>.btn>ul>li>a{ padding:3px 3px 3px 3px; text-decoration: none; color:black;}
 		footer>.btn>ul>li>a:hover{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
 
 		.edit {position: relative;margin: 0;width: 100%;font-size: 24px;font-family: inherit;font-weight: inherit;line-height: 1.4em;border: 0;color: inherit;padding: 6px;border: 1px solid #999;box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);box-sizing: border-box;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;}
-
-
+		.com{cursor: pointer; user-select: none;}
+		.opa1{opacity: 1;}
 		.clear{visibility: hidden;}
 		.active{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
 		.none{display: none;}
@@ -70,7 +69,7 @@
 						<li><a class="btnChk comChk"   data-chk = "comChk"href="#">Completed</a></li>
 					</ul>
 				</div>
-				<div class="btn clear">Clear completed</div>
+				<div class=" btn com clear">Clear completed</div>
 			</footer>
 			<div class="test"></div>
 		</div>
@@ -78,18 +77,48 @@
 
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
-		const changeArr = v => Array.from(v);	//setting
+		//setting
+		const changeArr = v => Array.from(v);
 
 		let 
 		key,
 		val,
 		target,
+		chkLen,
+		list = `<li class="list"> <div class="view"> <input class='toggle' id="tog" type='checkbox'> <label name= "listLabel"> </label><button class='destory'>X</button> </div> </li>`,
 		bool = false,
-		title = "allChk";
-		search = $(".search");
-		$("."+title).addClass('active');
+		search = $(".search"),
+		title = localStorage.getItem("title") == null ? "allChk" : localStorage.getItem("title"),
+		obj = localStorage.getItem("obj") == null ? [] : JSON.parse(localStorage.getItem("obj"));
+
+		$(window).on("beforeunload",function(){
+			title = $(".active").data("chk");
+			let content,chk = false;
+			obj = [];
+			Array.from($(".toggle")).forEach(v => {
+				if($(v).prop("checked")) chk = true;
+				else chk = false;
+				content = $(v).parents(".view").find("label").text();
+				obj.push({content:content,chk:chk});
+			});
+			setitem();
+		});
+		function load() {
+			$(".ttt").css({visibility:"visible"});
+			$("."+title).addClass('active');
+			obj.forEach((v,idx) => {
+				$(".list_box").append(list);
+				$(".list:last-child").find(".toggle").prop("checked",obj[idx].chk);
+				$(".list:last-child").find("label").text(obj[idx].content);
+			});	
+			check();
+			change();
+		}
+		// funciton
 		function check() {
+			$("footer").css({visibility:"visible"});
 			len = $(".toggle:not(:checked)").length;
+			chkLen = $(".toggle:checked").length;
 			if(len){
 				$("footer").css({visibility:"visible"});
 				$(".num").text(len);
@@ -102,19 +131,17 @@
 				$(".ttt").addClass('opa1');
 				$(".num").text(len);
 			}
+			if(chkLen){
+				$(".com").removeClass("clear");
+			}else{
+				$(".com").addClass("clear");
+			}
 		}
 
 		function create() {//list 생성
 			val = search.val().trim();
 			if(val == "") return;
-			$(".list_box").append(`
-				<li class="list">
-				<div class="view">
-				<input class='toggle' id="tog" type='checkbox'>
-				<label name= "listLabel"></label>
-				<button class='destory'>X</button>
-				</div>
-				</li>`);
+			$(".list_box").append(list);
 			$(".list:last-child").find("label").text(val);
 			search.val("");
 			check();
@@ -154,9 +181,11 @@
 				if($(this).hasClass('opa1')){
 					$(".toggle").prop("checked",true);
 					change();
+					check();
 				}else{
 					$(".toggle").prop("checked",false);
 					change();
+					check();
 				}
 			})
 			.on("click",".destory",function() {
@@ -203,13 +232,20 @@
 					}
 				}
 			})
+			.on("click",".com",function(){
+				$(".toggle:checked").parents(".list").remove();
+				change();
+				check();
+			})
 
 		}
+
 		function setitem(){
 			localStorage.setItem("title",title);
 			localStorage.setItem("obj",JSON.stringify(obj));
 		}
 		eve();
+		load();
 
 	</script>
 </body>
