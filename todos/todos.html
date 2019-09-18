@@ -80,16 +80,17 @@
 
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
-		let //setting
-		key,
-		val,
-		target,
-		chkLen,
-		list = `<li class="list"> <div class="view"> <input class='toggle' id="tog" type='checkbox'> <label name= "listLabel"> </label><button class='destory'>X</button> </div> </li>`,
-		bool = false,
-		search = $(".search"),
-		title = localStorage.getItem("title") == null ? "allChk" : localStorage.getItem("title"),
-		obj = localStorage.getItem("obj") == null ? [] : JSON.parse(localStorage.getItem("obj"));
+		(() => {
+			let //setting
+			key,
+			val,
+			target,
+			chkLen,
+			list = `<li class="list"> <div class="view"> <input class='toggle' id="tog" type='checkbox'> <label name= "listLabel"> </label><button class='destory'>X</button> </div> </li>`,
+			bool = false,
+			search = $(".search"),
+			title = localStorage.getItem("title") == null ? "allChk" : localStorage.getItem("title"),
+			obj = localStorage.getItem("obj") == null ? [] : JSON.parse(localStorage.getItem("obj"));
 
 		$(window).on("beforeunload",function(){//window 나갈시
 			title = $(".active").data("chk");
@@ -185,6 +186,7 @@
 				}
 			})
 			.on("click",".destory",function() {
+				if(search.val().trim() != "") return;
 				$(this).parents(".list").remove();
 				check();
 			})
@@ -239,6 +241,13 @@
 				change();
 				check();
 			})
+			.on("click",function(e){
+				if(!$(e.target).is($(".search"))){
+					if(search.val().trim() != ""){
+						return create();
+					}
+				}
+			})
 		}
 		function setitem(){// save
 			localStorage.setItem("title",title);
@@ -247,6 +256,7 @@
 
 		eve();
 		load();
+	})();
 
 </script>
 </body>
