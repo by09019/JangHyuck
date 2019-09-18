@@ -4,8 +4,8 @@
 	<meta charset="UTF-8">
 	<title>ToDos</title>
 	<style>
-		*{margin: 0;padding: 0;list-style: none;box-sizing: border-box;}
-		body{width: 100%;height: 100%;background: #f5f5f5;}
+		*{margin: 0;padding: 0;list-style: none;box-sizing: border-box; user-select: none;text-decoration: none;}
+		body{width: 100%;height: 100%;background: #f5f5f5; font-size: 14px;}
 		div{display: block;}
 		button{padding: 0;border:0; background: none; vertical-align: baseline;font-family: inherit;font-weight: inherit; }
 		.wrap{width: 100%;height: 100vh;position: relative;}
@@ -39,9 +39,12 @@
 		footer>.btn>ul>li{width:calc(100% / 3);height: 100%;}
 		footer>.btn>ul>li>a{ padding:3px 3px 3px 3px; text-decoration: none; color:black;}
 		footer>.btn>ul>li>a:hover{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
+		footer>.filters{position: relative; left: -40px;}
+
 
 		.edit {position: relative;margin: 0;width: 100%;font-size: 24px;font-family: inherit;font-weight: inherit;line-height: 1.4em;border: 0;color: inherit;padding: 6px;border: 1px solid #999;box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);box-sizing: border-box;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;}
-		.com{cursor: pointer; user-select: none;}
+		.com{ user-select: none;}
+		.com>a{color:black;}
 		.opa1{opacity: 1;}
 		.clear{visibility: hidden;}
 		.active{border:1px solid rgba(175,47,47,0.2); border-radius: 2px;}
@@ -69,7 +72,7 @@
 						<li><a class="btnChk comChk"   data-chk = "comChk"href="#">Completed</a></li>
 					</ul>
 				</div>
-				<div class=" btn com clear">Clear completed</div>
+				<div class="com btn clear"><a href="#">Clear completed</a></div>
 			</footer>
 			<div class="test"></div>
 		</div>
@@ -77,10 +80,7 @@
 
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
-		//setting
-		const changeArr = v => Array.from(v);
-
-		let 
+		let //setting
 		key,
 		val,
 		target,
@@ -91,7 +91,7 @@
 		title = localStorage.getItem("title") == null ? "allChk" : localStorage.getItem("title"),
 		obj = localStorage.getItem("obj") == null ? [] : JSON.parse(localStorage.getItem("obj"));
 
-		$(window).on("beforeunload",function(){
+		$(window).on("beforeunload",function(){//window 나갈시
 			title = $(".active").data("chk");
 			let content,chk = false;
 			obj = [];
@@ -103,7 +103,7 @@
 			});
 			setitem();
 		});
-		function load() {
+		function load() {// window 들어올시
 			$(".ttt").css({visibility:"visible"});
 			$("."+title).addClass('active');
 			obj.forEach((v,idx) => {
@@ -114,8 +114,7 @@
 			check();
 			change();
 		}
-		// funciton
-		function check() {
+		function check() {// check 관리 함수
 			$("footer").css({visibility:"visible"});
 			len = $(".toggle:not(:checked)").length;
 			chkLen = $(".toggle:checked").length;
@@ -137,7 +136,6 @@
 				$(".com").addClass("clear");
 			}
 		}
-
 		function create() {//list 생성
 			val = search.val().trim();
 			if(val == "") return;
@@ -147,8 +145,7 @@
 			check();
 			change();
 		} 
-
-		function change() {
+		function change() {//all , active, completed 눌렀을때 리스트 변경
 			switch(title) {
 				case "allChk":
 				$(".list").removeClass('none');
@@ -169,8 +166,7 @@
 				break;
 			}
 		}
-
-		function eve() {
+		function eve() {// event 함수
 			$(document)
 			.on("keydown",".search", e => {
 				key = e.keyCode;
@@ -233,18 +229,17 @@
 					}
 				}
 			})
-			.on("click",".com",function(){
+			.on("click",".com>a",function(){
 				$(".toggle:checked").parents(".list").remove();
 				change();
 				check();
 			})
-
 		}
-
-		function setitem(){
+		function setitem(){// save
 			localStorage.setItem("title",title);
 			localStorage.setItem("obj",JSON.stringify(obj));
 		}
+
 		eve();
 		load();
 
