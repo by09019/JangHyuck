@@ -207,7 +207,8 @@
 				target = $(this);
 				if(bool){
 					$(this).parents(".list").addClass('editing');
-					$(this).parents(".list").append(`<input type="text" class="edit" value="${$(this).text()}"/>`);
+					$(this).parents(".list").append(`<input type="text" class="edit"/>`);
+					$(".edit").val($(this).text());
 					$(".edit").focus();
 				}
 			})
