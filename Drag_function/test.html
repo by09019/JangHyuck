@@ -176,23 +176,17 @@ nodeY,
 targetX,
 targetY,
 testChk = 0;
-ttt = 8,
 chkUpDown = 0,
 listLeft = eleLeft($(".box_list")),
 listTop = [],
 listTopPlus = []
-order = [],
 target = null,
 centerX = null,
 centerY = null,
 isDown = false,
-isUpDown = true,
+firstChk = "",
+inOutChk = 0,
 boxList = $(".box_list");
-console.log(chkUpDown);
-// mousedown 한객체가 mousemove한만큼 움직인다. mouseup을하면 위치를 계산하여 그쪽에 넣는다.
-// mousemove 하는동안 list_box를 벗어나면 움직인 객체가 있던 공간은 사라지게 되고, 
-// list_box를 벗어난 객체에서 mouse up을 하면 원래의 자리로 돌아간다.
-// list에 mousemove를하면 원래있던 list는 자리를 비켜준다.
 
 function mouseDown(ele) {
 	isDown = true;
@@ -210,26 +204,39 @@ function mouseMove(value) {
 		target.css({left:nodeX,top:nodeY});
 
 		if(check()){//밖에 있을때
+			inOutChk = 1;
 			boxList.css({background:"#e6fcff"});
 			DownAll($(target).index());
 		}else{
-			if(testChk == 1){
-				upAll();
+			if(inOutChk == 1){
+				DownAll(present());
+				inOutChk = 0;
+			}
+			else if(testChk == 1){
+				upAll(present());
 				testChk = 0;
 			}
 			boxList.css({background:"#ffebe6"});
 			ez = Array.from($(".list")).filter((v,i) => centerX > listLeft && centerX < (listLeft + 250)
 				&& centerY > eleTop($(v)) && centerY < (eleTop($(v)) + listTopPlus[i]) && $(v).index() != target.index());
+
+			if(ez[0] != undefined && firstChk == ""){//처음 타겟이 위로갔는지 아래로 갔는지 체크
+				if( $(ez[0]).index() < target.index() ) firstChk = "up";
+				else if($(ez[0]).index() > target.index() ) firstChk = "down";
+			}
+
 			if(centerY < chkUpDown) {//up
-				$(ez[0]).stop().animate({top:0},50);
+				if(ez[0] != undefined){
+					console.log(firstChk);
+					$(ez[0]).stop().animate({top:100},50); 
+
+				}
 			}else if(centerY > chkUpDown) {//down
 				if(ez[0] != undefined){
-					$(ez[0]).stop().animate({top:-100});
-					console.log($(ez[0]).offset().top);
+					if(firstChk == "down") $(ez[0]).stop().animate({top:-100});
+					else $(ez[0]).stop().animate({top:0},50);
 				}
 
-			}else{
-				// console.log("err");
 			}
 			chkUpDown = centerY;
 		}
@@ -237,22 +244,37 @@ function mouseMove(value) {
 }
 
 function mouseUp(ele) {
-	if(check() && target != null) {
+	if(check() && target != null) {//밖에 있을때
 		target.removeClass('active');
 		$(`.list:not(.list:nth-child(${target.index()+1}))`).stop().animate({left:0,top:0},50);
-		target.stop().animate({top:0,left:0},50);
+		target.stop().animate({top:0,left:0},500);
 		boxList.css({background:"#ebecf0"});
-	}else if(target != null) {
-		console.log(ez);
+	}else if(target != null) {//안에 있을때
+
 	}
 	isDown = false;
 	target = null;
 }
+function present() {
+}
+	listTop.forEach((v,idx) => {
+		console.log(v);
+		if(centerY > v &&  centerY < (v + listTopPlus[idx]))
+			return idx;
+	});
+
 function DownAll(tg) {
+	console.log("실행중",tg);
 	testChk = 1;
 	Array.from($(".list")).forEach((v,idx) => {
 		if( idx > tg)
 			$(v).animate({top:-100},50);
+	})
+}
+function upAll(tg) {
+	Array.from($(".list")).forEach((v,idx) => {
+		if( idx > tg)
+			$(v).animate({top:0},50);
 	})
 }
 
@@ -277,6 +299,7 @@ function load() {
 		listTop.push(eleTop($(v)));
 		listTopPlus.push(eleHeight($(v)));
 	});
+
 	$(window).on("resize",function(){
 		listLeft = eleLeft($(".box_list"));
 	})
