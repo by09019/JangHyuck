@@ -228,13 +228,13 @@ function mouseMove(value) {
 
 			if(centerY < chkUpDown) {//up
 				if(ez[0] != undefined){
-					if(firstChk == "up") $(ez[0]).stop().animate({top:(target.height() + 28)},50); 
+					if(firstChk == "up" || firstChk == "down" && target.index() > $(ez[0]).index() ) $(ez[0]).stop().animate({top:(target.height() + 28)},50); 
 					else $(ez[0]).stop().animate({top:0},50);
 
 				}
 			}else if(centerY > chkUpDown) {//down
 				if(ez[0] != undefined){
-					if(firstChk == "down" || firstChk == "up" && target.index() > $(ez[0]).index() ) $(ez[0]).stop().animate({top:-(target.height() + 28)},50);
+					if(firstChk == "down" || firstChk == "up" && target.index() < $(ez[0]).index() ) $(ez[0]).stop().animate({top:-(target.height() + 28)},50);
 					else $(ez[0]).stop().animate({top:0},50);
 				}
 
@@ -248,7 +248,7 @@ function mouseUp(ele) {
 	if(check() && target != null) { //밖에 있을때
 		target.removeClass('active');
 		$(`.list:not(.list:nth-child(${target.index()+1}))`).stop().animate({left:0,top:0},50);
-		target.stop().animate({top:0,left:0},500);
+		target.stop().animate({top:0,left:0},150);
 		inOutChk = 0;
 		boxList.css({background:"#ebecf0"});
 	}else if(target != null) { //안에 있을때
