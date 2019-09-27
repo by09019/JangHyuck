@@ -6,21 +6,17 @@ eleTop = v => $(v).offset().top;
 
 let
 target = { me:null, x:0, y:0, center:{x:0, y:0},test:0 },
-list = { arr:[], left:eleLeft(".list") },
+list = { arr:[], left:eleLeft(".list"),heightArr:[] },
 box = { left:eleLeft(".box_list"), top:eleTop(".box_list") },
 check = { first:0, location:0, out:0, isUpDown:0, isDown:false },
-other = {windowScroll:0,compare:[]};
+other = {windowScroll:0,compare:[],nowChk:0};
 
 function certainPartUp(e) {
-	if(e != target.me.index()){
-		$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,0px)`});
-	}
+	$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,0px)`});
 }
 
 function certainPartDown(e) {
-	if(e != target.me.index()){
-		$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,${target.me.height() + 28}px)`});
-	}
+	$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,${target.me.height() + 28}px)`});
 }
 
 function certainPartIn(e) {
@@ -39,18 +35,18 @@ function certainPartOut(e) {
 	});
 }
 
-function locationCheck() {
+function locationCheck(test = "") {
 	list.arr.filter((v,idx) => {
-		// console.log(v);
+
 		if( (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2)) > (list.arr[11].top + 8) ){
 			check.location = 13;
 			return true;
-		}else if(idx == target.me.index() && (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + $(`.list:nth-child(${idx+1})`).height() + 8 ) ){
+		}else if(idx == target.me.index() && (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + test + 8 ) ){
 			check.location = idx;
 			return true;
 
 		}else if((target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) &&
-			(target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + $(`.list:nth-child(${idx+1})`).height() + 8 ) ){
+			(target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + list.arr[idx].height + 8 ) ){
 
 			return check.location = idx;
 		}
@@ -106,20 +102,33 @@ function mouseMove(e) {
 				certainPartIn(locationCheck());
 				check.out = 0;
 			}
-			if(locationCheck() != target.me.index() )
-				target.test = locationCheck();
-			console.log(locationCheck()," move");
+			// if(locationCheck() != target.me.index() )
+			// 	target.test = locationCheck();
+
+
+			console.log(locationCheck(),other.nowChk);
 
 			if((target.center.y + (target.me.height() / 2) ) < check.isUpDown) { // up
-				certainPartDown(locationCheck());
+				if(other.nowChk != locationCheck()){
+					console.log("up");
+					certainPartDown(locationCheck());
+					list.arr[locationCheck() - 1].height = $(`.list:nth-child(${locationCheck() +1})`).height() + 20;
+				}
 			}else if((target.center.y + (target.me.height() / 2) ) > check.isUpDown) { // down
-				certainPartUp(locationCheck());
+				if(other.nowChk != locationCheck()){
+					console.log("down");
+					certainPartUp(locationCheck());
+					if(locationCheck() != target.me.index())
+						list.arr[locationCheck() - 1].height = $(`.list:nth-child(${locationCheck() +1})`).height() + 20;
+					list.arr[locationCheck()].height = target.me.height();
+				}
 			}
 
+			other.nowChk = locationCheck();
 			$(".box_list").css({background:"#ffebe6"});
+			check.isUpDown = (target.center.y + (target.me.height() / 2) );
 		}
 
-		check.isUpDown = (target.center.y + (target.me.height() / 2) );
 	}
 }
 
@@ -129,13 +138,13 @@ function mouseUp(e) {//마우스 업 했을때
 			$(".list").css({position:"relative",top:0,left:0,transform:"translate(0px,0px)",zIndex:"0",transition:"none"});
 		}else {
 			console.log(locationCheck());
-			if(target.test == target.me.index()){
+			if(locationCheck() == target.me.index()){
 				$(`.list:not(.list:nth-child(${target.me.index()}))`).css({position:"relative",top:0,left:0,transform:"translate(0px,0px)",zIndex:"0",transition:"none"});
 				// target.me.css({transition:"0.3s ease-out"}).css({position:"relative",transform:"translate(0px,0px)"});
 				target.me.css({"transition":"0.3s ease-out",position:"relative"});
 			}else {
 				target.me.css({transition:"0.15s ease-out"}).css({position:"absolute",
-					transform:`translate(0px,${eleTop(`.list:nth-child(${target.test + 1})`) + $(`.list:nth-child(${target.test + 1})`).height() + 20}px)`});
+					transform:`translate(0px,${eleTop(`.list:nth-child(${locationCheck() + 1})`) + $(`.list:nth-child(${locationCheck() + 1})`).height() + 20}px)`});
 			}
 
 		}
@@ -163,8 +172,10 @@ function eve() {
 }
 
 function load() {
-	Array.from($(".list")).forEach((v,idx) => list.arr.push({top:eleTop(v),idx:idx}) );
-	console.log(list.arr);
+	Array.from($(".list")).forEach((v,idx) => list.arr.push({top:eleTop(v),idx:idx,height:($(v).height() + 20)}) );
+	list.arr.forEach((v,idx) => {
+		$(".testBorder").eq(idx).css({top:v.top + v.height});
+	});
 }
 
 eve();
