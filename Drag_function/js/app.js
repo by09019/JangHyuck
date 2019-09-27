@@ -40,16 +40,18 @@ function certainPartOut(e) {
 }
 
 function locationCheck() {
-	Array.from($(".list")).filter((v,idx) => {
-		if((target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2)) > (list.arr[11].top + 8) ){
+	list.arr.filter((v,idx) => {
+		// console.log(v);
+		if( (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2)) > (list.arr[11].top + 8) ){
 			check.location = 13;
 			return true;
-		}else if(idx == target.me.index() && (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2) ) > target.me.y && (target.center.y + (target.me.height() / 2) ) < (target.me.y + $(v).height()+36)){
+		}else if(idx == target.me.index() && (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + $(`.list:nth-child(${idx+1})`).height() + 8 ) ){
 			check.location = idx;
 			return true;
 
 		}else if((target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) &&
-			(target.center.y+(target.me.height()/ 2) ) > (eleTop($(v))) && (target.center.y + (target.me.height() / 2) ) < (eleTop($(v)) + $(v).height()+28)){
+			(target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + $(`.list:nth-child(${idx+1})`).height() + 8 ) ){
+
 			return check.location = idx;
 		}
 	});
