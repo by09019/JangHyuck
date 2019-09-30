@@ -5,53 +5,40 @@ eleLeft = v => $(v).offset().left,
 eleTop = v => $(v).offset().top;
 
 let
+centerX = 0,
+centerY = 0,
 target = { me:null, x:0, y:0, center:{x:0, y:0},test:0 },
 list = { arr:[], left:eleLeft(".list"),heightArr:[] },
 box = { left:eleLeft(".box_list"), top:eleTop(".box_list") },
-check = { first:0, location:0, out:0, isUpDown:0, isDown:false },
-other = {windowScroll:0,compare:[],nowChk:0};
+check = { first:0, out:0, isDown:false },
+other = {windowScroll:0,nowChk:0,ntcx:0,ntcy:0,moveIdx:0};
 
-function certainPartUp(e) {
-	$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,0px)`});
+function OriginalPlace() {
+	$(`.list:not(.list:nth-child(${target.me.index() + 1}))`).css({position:"relative",top:0,left:0,transform:"translate(0px,0px)",zIndex:"0",transition:"none"});
+	target.me.css({transition:"0.1s ease-out"}).css({transform:"translate(0px,0px)"});
+	setTimeout(function() { target.me.css({transition:"none",position:"relative",left:0,top:0}); },100.1);
 }
 
-function certainPartDown(e) {
-	$(`.list:nth-child(${e+1})`).css({transform:`translate(0px,${target.me.height() + 28}px)`});
-}
-
-function certainPartIn(e) {
-	Array.from($(".list")).filter((v,idx) => {
-		if(idx >= e && target.me.index() != idx){
-			$(v).css({transform:`translate(0px,${target.me.height() + 28}px)`});
+function certainPart(e = 0,txt = "in") {
+	if(txt == "out"){
+		$(`.list:not(.list:nth-child(${target.me.index()+1}))`).css({transform:`translate(0px,0px`});
+	}else if(txt == "in") {
+		if(check.out == 1){ //처음 들어올시
+			Array.from($(".list")).filter((v,idx) => {
+				if(idx >= e && target.me.index() != idx){
+					$(v).css({transform:`translate(0px,${target.me.height() + 28}px)`});
+				}
+			});
+			check.out = 0;
 		}
-	});
-}
-
-function certainPartOut(e) {
-	Array.from($(".list")).filter((v,idx) => {
-		if(idx >= e && target.me.index() != idx){
-			$(v).css({transform:"translate(0px,0px)"});
-		}
-	});
-}
-
-function locationCheck(test = "") {
-	list.arr.filter((v,idx) => {
-
-		if( (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2)) > (list.arr[11].top + 8) ){
-			check.location = 13;
-			return true;
-		}else if(idx == target.me.index() && (target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) && (target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + test + 8 ) ){
-			check.location = idx;
-			return true;
-
-		}else if((target.center.x + (target.me.width() / 2) ) > list.left && (target.center.x + (target.me.width() / 2) ) < (list.left + 250) &&
-			(target.center.y+(target.me.height()/ 2) ) > v.top && (target.center.y + (target.me.height() / 2) ) < (v.top + list.arr[idx].height + 8 ) ){
-
-			return check.location = idx;
-		}
-	});
-	return check.location;
+		Array.from($(".list")).filter((v,idx) => {
+			if(idx > e && target.me.index() != idx){
+				$(v).css({transform:`translate(0px,${target.me.height() + 28}px)`});
+			}else if(target.me.index() != idx && idx <= e){
+				$(v).css({transform:`translate(0px,0px`});
+			}
+		});
+	}
 }
 
 function inOutChk() { // 밖인지 안인지 체크
@@ -70,9 +57,13 @@ function mouseDown(e) {//마우스 다운시
 		target.y = eleTop(target.me);
 		target.me.css({position:"fixed",zIndex:"9999"});
 		target.me.css({top:list.arr[target.me.index()].top, left:list.left});
+		other.nowChk = target.me.index();
+		other.moveIdx = target.me.index();
 		Array.from($(".list")).forEach((v,idx) => {
-			if(idx > target.me.index())
+			if(idx > target.me.index()){
+				$(v).addClass("hov");
 				$(v).css({transform:`translate(0px,${target.me.height() + 28}px)`});
+			}
 		});
 	}
 }
@@ -81,52 +72,36 @@ function mouseMove(e) {
 	if(check.isDown){//마우스 클릭시에만
 		target.center.x = e.pageX - (target.me.width() / 2);
 		target.center.y = e.pageY - (target.me.height() / 2);
+		centerX = (target.center.x + (target.me.width() / 2) );
+		centerY = (target.center.y + (target.me.height() / 2) );
 		target.me.css({transform:`translate(${(target.center.x - target.x) - $(window).scrollLeft()}px,
 			${target.center.y - target.y - $(window).scrollTop()}px)`});
 
 		if(check.first == 0){
-			Array.from($(".list")).forEach((v,idx) => {
-				if(idx != target.me.index())
-					$(v).css({transition:"0.2s ease-out"});
-			});
+			$(`.list:not(.list:nth-child(${target.me.index() + 1}))`).css({transition:"0.15s ease-out"});
 			check.first = 1;
 		}
 
 		if(inOutChk()) { // true = 밖
 			check.out = 1;
-			certainPartOut(locationCheck());
+			certainPart(0,"out");
 			$(".box_list").css({background:"#e6fcff"});
 
 		}else {// false = 안
-			if(check.out == 1){
-				certainPartIn(locationCheck());
-				check.out = 0;
-			}
-			// if(locationCheck() != target.me.index() )
-			// 	target.test = locationCheck();
-
-
-			console.log(locationCheck(),other.nowChk);
-
-			if((target.center.y + (target.me.height() / 2) ) < check.isUpDown) { // up
-				if(other.nowChk != locationCheck()){
-					console.log("up");
-					certainPartDown(locationCheck());
-					list.arr[locationCheck() - 1].height = $(`.list:nth-child(${locationCheck() +1})`).height() + 20;
+			Array.from($(".list")).forEach((v,idx) => {
+				ntcx = eleLeft(v);
+				ntcy = eleTop(v);
+				if(centerX > ntcx && centerX < (ntcx + $(v).width()) &&
+					centerY > ntcy && centerY < (ntcy + $(v).height() + 28) ){
+					if(other.nowChk != idx && idx != target.me.index()){
+						other.nowChk = certainPart(idx);
+						other.moveIdx = idx;
+						console.log(idx);
+						return certainPart(idx);
+					}
 				}
-			}else if((target.center.y + (target.me.height() / 2) ) > check.isUpDown) { // down
-				if(other.nowChk != locationCheck()){
-					console.log("down");
-					certainPartUp(locationCheck());
-					if(locationCheck() != target.me.index())
-						list.arr[locationCheck() - 1].height = $(`.list:nth-child(${locationCheck() +1})`).height() + 20;
-					list.arr[locationCheck()].height = target.me.height();
-				}
-			}
-
-			other.nowChk = locationCheck();
+			});
 			$(".box_list").css({background:"#ffebe6"});
-			check.isUpDown = (target.center.y + (target.me.height() / 2) );
 		}
 
 	}
@@ -134,25 +109,32 @@ function mouseMove(e) {
 
 function mouseUp(e) {//마우스 업 했을때 
 	if(target.me != null){
+		if(target.center.x != 0) $(this).bind('click',false); 
+
 		if(inOutChk()) {
-			$(".list").css({position:"relative",top:0,left:0,transform:"translate(0px,0px)",zIndex:"0",transition:"none"});
+			OriginalPlace();
 		}else {
-			console.log(locationCheck());
-			if(locationCheck() == target.me.index()){
-				$(`.list:not(.list:nth-child(${target.me.index()}))`).css({position:"relative",top:0,left:0,transform:"translate(0px,0px)",zIndex:"0",transition:"none"});
-				// target.me.css({transition:"0.3s ease-out"}).css({position:"relative",transform:"translate(0px,0px)"});
-				target.me.css({"transition":"0.3s ease-out",position:"relative"});
-			}else {
-				target.me.css({transition:"0.15s ease-out"}).css({position:"absolute",
-					transform:`translate(0px,${eleTop(`.list:nth-child(${locationCheck() + 1})`) + $(`.list:nth-child(${locationCheck() + 1})`).height() + 20}px)`});
+			if(other.moveIdx == target.me.index()){
+				OriginalPlace();
+			}else{
+				setTimeout(function() {
+					target.me.css({transition:"0.1s ease-out"}).css({top:0,transform:`translate(0px,${(eleTop(`.list:nth-child(${other.moveIdx +1})`) + $(`.list:nth-child(${other.moveIdx +1})`).height() + 28 - other.windowScroll )}px)`});
+					// setTimeout(function() {
+					// 	Array.from($(".list")).forEach((v,idx) => {
+
+					// 	});
+					// },100.1);
+				},150.1);
 			}
 
 		}
 
-		$(".box_list").css({background:"#ebecf0"});
-		check.first = 0;
 		check.isDown = false;
-		target.me = null;
+		setTimeout(function() {
+			$(".box_list").css({background:"#ebecf0"});
+			check.first = 0;
+			target.me = null;
+		},152.11);
 
 	}
 }
@@ -166,17 +148,18 @@ function eve() {
 	.on("mousedown","a",mouseDown )
 	.on("mousemove",mouseMove.bind(this) )
 	.on("mouseup",mouseUp.bind(this) )
-	.on("scroll",function() {
-		other.windowScroll = $(window).scrollTop();
-	})
+	.on("scroll",_ => other.windowScroll = $(window).scrollTop() )
 }
 
 function load() {
+	setTimeout( _ => $(window).scrollTop(0) ,0.01);
 	Array.from($(".list")).forEach((v,idx) => list.arr.push({top:eleTop(v),idx:idx,height:($(v).height() + 20)}) );
 	list.arr.forEach((v,idx) => {
 		$(".testBorder").eq(idx).css({top:v.top + v.height});
 	});
 }
-
+$(document).ready(function() {
+	
+});
 eve();
 load();

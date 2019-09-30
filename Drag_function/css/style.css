@@ -16,4 +16,5 @@ small, .text{font-size: 0.7857142857142857em;font-style: inherit;line-height: 1.
 .test{transition:"0.4s ease-out"}
 .tet{width: 100px;height: 100px;background: red; position: absolute;top: 0;left: 0; z-index: -1;}
 
+
 .testBorder{width: 250px; height: 1px; border:1px solid black; position: fixed; z-index: 9999; top: 0;left:50%; transform: translateX(-50%);}
