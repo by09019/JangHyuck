@@ -24,8 +24,9 @@ function certainPart(e = 0,txt = "in") {//태그 위치 변경
 		$(`.list:not(.list:nth-child(${target.me.index()+1}))`).css({transform:`translate(0px,0px`});
 	}else if(txt == "in") {
 		if(check.out == 1){ //처음 들어올시
+			console.log("처음 들어올 시");
 			Array.from($(".list")).filter((v,idx) => {
-				if(idx >= e && target.me.index() != idx){
+				if(idx > e){
 					$(v).css({transform:`translate(0px,${target.me.height() + 28}px)`});
 				}
 			});
@@ -91,30 +92,24 @@ function mouseMove(e) {
 			$(".box_list").css({background:"#e6fcff"});
 
 		}else {// false = 안
-			Array.from($(".list")).forEach((v,idx) => {
-				// if(centerX > list.left && centerX < (list.left + $(v).width()) &&
-				// 	centerY > list.arr[idx].top && centerY < (list.arr[idx].top + list.arr[idx].height + 28) ){
-				// 	if(other.moveIdx != idx){
-				// 		other.nowChk = certainPart(idx);
-				// 		setTimeout(function(){
-				// 			list.arr[idx].height = $(v).height();
-				// 			console.log(list.arr[idx].height);
-				// 		},150.1);
-				// 		other.moveIdx = idx;
-				// 		// console.log(idx);
-				// 		return certainPart(idx);
-				// 	}
-				// }
-
-				if(centerX > list.left && centerX < (list.left + $(v).width()) &&
-					eleTop(target.me) >= (eleTop(v) + ($(v).height() / 2)) ||
-					(eleTop(target.me) + target.me.height()) >= (eleTop(v) + ($(v).height() / 2))  ){
-					if(other.moveIdx != idx){
-						other.moveIdx = idx;
-						return certainPart(idx);
+			if(centerX > list.left && centerX < ( list.left + 250 )) {
+				list.arr.filter(v =>  centerY > v.top && centerY < (v.top + v.height + 8) ).map(v => {
+					console.log(v.idx);
+					if(other.moveIdx != v.idx ){// 다른데로 이동 체크
+						console.log(v.idx,other.moveIdx);
+						if(other.moveIdx < v.idx) { // 아래로 내려갔을때
+							console.log("아래로");
+							certainPart(v.idx);
+						}else if(other.moveIdx > v.idx) {// 위로 올라갔을때
+							console.log("위로");
+							certainPart(v.idx);
+						}
+						v.height = target.me.height();
+						other.moveIdx = v.idx;
 					}
-				}
-			});
+
+				});
+			}
 			$(".box_list").css({background:"#ffebe6"});
 		}
 
@@ -163,7 +158,7 @@ function eve() {
 function load() {
 	Array.from($(".list")).forEach((v,idx) => {
 		list.arr.push({top:eleTop(v),idx:idx,height:($(v).height() + 20)});
-		$(v).find(".test").css({width:"100%",height:"1px",position:"absolute",top:($(v).height() / 2),background:"black",left:0 });
+		// $(v).find(".test").css({width:"100%",height:"1px",position:"absolute",top:($(v).height() / 2),background:"black",left:0 });
 	} );
 }
 eve();
