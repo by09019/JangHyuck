@@ -1,0 +1,16 @@
+* {margin: 0; padding: 0; list-style: none; box-sizing: border-box;}
+.wrap {width: 100vw; height: 100vh; position: relative; display: flex; justify-content: space-between;}
+.wrap section {height: 100%;}
+.wrap section.save, section.type { width: 360px; position: relative;}
+.wrap section.list {width: 1220px; position: relative;}
+.wrap section.list canvas { margin-left: 15px; }
+.wrap section.list span {font-size: 12px;}
+.wrap section.list .xBox {width: 1200px; height: 21px; margin-left: 15px;}
+.wrap section.list .yBox { width: 15px; height: 600px; position: absolute;}
+.wrap section.list .xBox span {display: inline-block; width: 15px; height: 21px; text-align: center;}
+.wrap section.list .yBox span {display: block; width: 15px; height: 15px; text-align: center; line-height: 15px;}
+.boxList { width:calc((15px * 80) + 2px); height:calc(15px * 40); border: 1px solid gray; position: relative; }
+.box {width: 15px; height: 15px; border:1px solid gray; float: left;}
+.choose {width: 100px; height: 25px; display: flex; justify-content: space-around;}
+.boxColor {width: 40px; height: 25px; border:1px solid black;}
+.type {text-align: center;}
